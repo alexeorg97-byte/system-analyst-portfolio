@@ -53,6 +53,8 @@
 - CRM (Bitrix24)
 - Telegram
 
+[Описание API](./api.md)
+
 ---
 
 ## Что показывает кейс
@@ -64,5 +66,3 @@
 
 
 
-
-![Sequence](./sequence.png)
