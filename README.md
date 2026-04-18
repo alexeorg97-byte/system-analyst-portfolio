@@ -60,13 +60,19 @@
 ## Артефакты
 
 ### BPMN (бизнес-процесс)
+
 ![BPMN](./migration-assistant-bot/bpmn.png)
 
+
 ### Sequence Diagram (оплата)
+
 ![Sequence](./migration-assistant-bot/sequence.png)
 
+
 ### ERD (модель данных)
+
 ![ERD](./migration-assistant-bot/erd.png)
+
 
 ### Интерфейс чат-бота
 
@@ -99,8 +105,6 @@
 - состав (образец + бланк)
 - переход к оплате
 
-![Покупка](./screen3.png)
-
 <img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 47 19" src="https://github.com/user-attachments/assets/e272a423-8ec6-4376-aed5-0e224dc78d66" /> 
 
 #### Форма заявки
@@ -111,7 +115,5 @@
 - валидирует ввод
 - получает согласие на обработку данных
 - передаёт данные в CRM
-
-![Форма](./screen4.png)
 
 <img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 47 35" src="https://github.com/user-attachments/assets/517c239a-eb36-4e76-ae02-0ca7c19ff493" />
