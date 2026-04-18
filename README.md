@@ -53,7 +53,7 @@
 - сокращение времени до покупки
 - централизованный сбор лидов в CRM
 
-➡️ Подробнее о кейсе: [Migration Assistant Bot](./migration-assistant-bot/README.md)
+Подробнее о кейсе: [Migration Assistant Bot](./migration-assistant-bot/README.md)
 
 ---
 
