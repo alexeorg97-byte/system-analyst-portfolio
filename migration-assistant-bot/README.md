@@ -15,6 +15,7 @@
 ![BPMN](./bpmn.png)
 
 Диаграмма выполнена в нотации BPMN 2.0 с разделением по ролям (User / System / Manager).
+
 ---
 
 ## Sequence Diagram (оплата)
