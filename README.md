@@ -83,7 +83,7 @@
 - покупка шаблонов
 - оставление заявки
 
-![Стартовый экран](migration-assistant-bot/screens/screen1.png)
+![Стартовый экран](./migration-assistant-bot/screens/screen1.png)
 
 #### Выбор темы и навигация
 
