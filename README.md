@@ -83,7 +83,7 @@
 - покупка шаблонов
 - оставление заявки
 
-<img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 42 10" src="https://github.com/user-attachments/assets/adb5007a-32da-458b-86bb-8a26a2b60ab8" /> 
+![Стартовый экран](./migration-assistant-bot/screens/screen1.png)
 
 #### Выбор темы и навигация
 
@@ -94,7 +94,7 @@
 - ведёт пользователя по сценарию
 - предлагает следующий шаг
 
-<img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 46 59" src="https://github.com/user-attachments/assets/9949349b-3d7c-4b4a-b68e-4d54e7e7edef" /> 
+![Выбор темы и навигация](./migration-assistant-bot/screens/screen2.png)
 
 #### Покупка продукта
 
@@ -105,7 +105,7 @@
 - состав (образец + бланк)
 - переход к оплате
 
-<img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 47 19" src="https://github.com/user-attachments/assets/e272a423-8ec6-4376-aed5-0e224dc78d66" /> 
+![Покупка продукта](./migration-assistant-bot/screens/screen3.png)
 
 #### Форма заявки
 
@@ -116,4 +116,4 @@
 - получает согласие на обработку данных
 - передаёт данные в CRM
 
-<img width="600" height="749" alt="Снимок экрана 2026-04-14 в 19 47 35" src="https://github.com/user-attachments/assets/517c239a-eb36-4e76-ae02-0ca7c19ff493" />
+![Форма заявки](./migration-assistant-bot/screens/screen4.png)
