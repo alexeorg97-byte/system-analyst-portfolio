@@ -53,6 +53,15 @@
 - сокращение времени до покупки
 - централизованный сбор лидов в CRM
 
+## Технологии и инструменты
+
+- BPMN (draw.io)
+- UML Sequence Diagram
+- ERD моделирование
+- REST API (описание)
+- YooKassa API
+- Bitrix24 API
+
 Подробнее о кейсе: [Migration Assistant Bot](./migration-assistant-bot/README.md)
 
 ---
