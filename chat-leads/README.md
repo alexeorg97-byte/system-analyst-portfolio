@@ -12,6 +12,11 @@ Lead management система с сайтом, формой заявки, ча�
 
 Задача была шире обычной формы: нужно было спроектировать систему, где заявка создаётся из формы или чата, сохраняется в базе, передаётся в уведомления, обрабатывается в админке и сопровождается историей событий.
 
+## Демо
+
+Рабочий прототип: https://chat-leads.ru  
+Публичный кейс: https://chat-leads.ru/case
+
 ## Вызов
 
 Скоуп был хаотичным: лендинг, форма, чат-бот, real-time чат, CRM/Telegram-интеграции, аналитика, админка, роли и обработка заявок.
@@ -142,3 +147,30 @@ Socket.IO events:
 ### Управление пользователями
 
 ![Управление пользователями](./chat-leads/assets/users.png)
+
+
+## Кратко для резюме
+
+**Пет-проект / lead management и real-time чат**  
+**Роль:** системный аналитик + разработчик/интегратор  
+**Стек:** Next.js, TypeScript, PostgreSQL, Prisma, Socket.IO, Telegram Bot API, Яндекс Метрика, Nginx, PM2, VPS
+
+- Из идеи “сайт с умным чатом для заявок” сформировал концепцию lead management системы: лендинг, форма, чат-бот, real-time чат, админка, интеграции и аналитика.
+- Спроектировал модель данных и реализовал ключевые сущности: Lead, User, ChatSession, Message, LeadEvent, OperatorComment, IntegrationLog, AuditLog.
+- Описал и реализовал REST/WebSocket-взаимодействие: создание заявки, смена статуса, комментарии, события чата, operator handoff и real-time сообщения.
+- Реализовал production-прототип: PostgreSQL/Prisma, Telegram-уведомления, админку лидов, роли, аудит, UTM-трекинг, Яндекс Метрику и SSL-деплой на VPS.
+
+## Документация
+
+Аналитические артефакты:
+
+- ERD
+- BPMN / business process
+- REST API contracts
+- WebSocket contract
+- Functional requirements
+- Non-functional requirements
+- Test cases
+- User stories
+- Backlog MoSCoW
+- Edge cases
