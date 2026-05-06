@@ -93,3 +93,6 @@ Production-прототип lead management системы с сайтом, фо
 
 Юрий Алексеев  
 Санкт-Петербург  
+Телефон: +7 993 486-39-05  
+Email: alexeorg97@gmail.com  
+Telegram: [@yura_opy](https://t.me/yura_opy)
