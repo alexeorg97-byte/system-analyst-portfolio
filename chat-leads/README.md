@@ -117,28 +117,28 @@ Socket.IO events:
 
 ### Лендинг
 
-![Лендинг](./assets/landing.png)
+![Лендинг](./chat-leads/assets/landing.png)
 
 ### Админка заявок
 
-![Админка заявок](./assets/admin-leads.png)
+![Админка заявок](./chat-leads/assets/admin-leads.png)
 
 ### Карточка заявки
 
-![Карточка заявки](./assets/lead-card.png)
+![Карточка заявки](./chat-leads/assets/lead-card.png)
 
 ### Чат-виджет
 
-![Чат-виджет](./assets/chat-widget.png)
+![Чат-виджет](./chat-leads/assets/chat-widget.png)
 
 ### Real-time чат оператора
 
-![Real-time чат оператора](./assets/admin-chat.png)
+![Real-time чат оператора](./chat-leads/assets/admin-chat.png)
 
 ### AuditLog
 
-![AuditLog](./assets/audit-log.png)
+![AuditLog](./chat-leads/assets/audit-log.png)
 
 ### Управление пользователями
 
-![Управление пользователями](./assets/users.png)
+![Управление пользователями](./chat-leads/assets/users.png)
