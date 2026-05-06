@@ -111,3 +111,34 @@ Socket.IO events:
 - `presence:update`
 - `chat:closed`
 - `chat:error`
+
+
+## Скриншоты
+
+### Лендинг
+
+![Лендинг](./assets/landing.png)
+
+### Админка заявок
+
+![Админка заявок](./assets/admin-leads.png)
+
+### Карточка заявки
+
+![Карточка заявки](./assets/lead-card.png)
+
+### Чат-виджет
+
+![Чат-виджет](./assets/chat-widget.png)
+
+### Real-time чат оператора
+
+![Real-time чат оператора](./assets/admin-chat.png)
+
+### AuditLog
+
+![AuditLog](./assets/audit-log.png)
+
+### Управление пользователями
+
+![Управление пользователями](./assets/users.png)
