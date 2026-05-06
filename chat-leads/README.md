@@ -175,3 +175,5 @@ Socket.IO events:
 - [User stories](./docs/user-stories.md)
 - [Backlog MoSCoW](./docs/backlog-moscow.md)
 - [Edge cases](./docs/edge-cases.md)
+- [Backlog MoSCoW](./docs/backlog-moscow.md)
+- [Edge cases](./docs/edge-cases.md)
