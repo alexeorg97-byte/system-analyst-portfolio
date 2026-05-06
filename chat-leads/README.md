@@ -162,15 +162,16 @@ Socket.IO events:
 
 ## Документация
 
-Аналитические артефакты:
+Для проекта подготовлена аналитическая документация:
 
-- ERD
-- BPMN / business process
-- REST API contracts
-- WebSocket contract
-- Functional requirements
-- Non-functional requirements
-- Test cases
-- User stories
-- Backlog MoSCoW
-- Edge cases
+- [Architecture overview](./docs/architecture-overview.md)
+- [ERD](./docs/erd.md)
+- [Business process](./docs/business-process.md)
+- [OpenAPI](./docs/openapi.yaml)
+- [WebSocket contract](./docs/websocket-contract.md)
+- [Functional requirements](./docs/functional-requirements.md)
+- [Non-functional requirements](./docs/non-functional-requirements.md)
+- [Test cases](./docs/test-cases.md)
+- [User stories](./docs/user-stories.md)
+- [Backlog MoSCoW](./docs/backlog-moscow.md)
+- [Edge cases](./docs/edge-cases.md)
