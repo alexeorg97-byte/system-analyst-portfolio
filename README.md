@@ -57,8 +57,8 @@ Production-прототип lead management системы с сайтом, фо
 **Фокус:** lead management, real-time chat, админка, API/WebSocket, роли, аудит  
 **Стек:** Next.js, TypeScript, PostgreSQL, Prisma, Socket.IO, Telegram Bot API, Яндекс Метрика, Nginx, PM2, VPS
 
-Рабочий прототип: https://chat-leads.ru  
-Публичный кейс: https://chat-leads.ru/case
+**Рабочий прототип:** https://chat-leads.ru  
+**Публичный кейс:** https://chat-leads.ru/case
 
 Что реализовано и спроектировано:
 
@@ -81,7 +81,7 @@ Production-прототип lead management системы с сайтом, фо
 
 ---
 
-## Навыки
+# Навыки
 
 **Системный анализ:** требования, ФТ/НФТ, User Story, Use Case, acceptance criteria, edge cases  
 **Моделирование:** BPMN, UML Sequence Diagram, ERD  
@@ -92,10 +92,10 @@ Production-прототип lead management системы с сайтом, фо
 
 ---
 
-## Контакты
+# Контакты
 
 Юрий Алексеев  
 Санкт-Петербург  
 Телефон: +7 993 486-39-05  
-Email: alexeorg97@gmail.com  
+Email: [alexeorg97@gmail.com](mailto:alexeorg97@gmail.com)  
 Telegram: [@yura_opy](https://t.me/yura_opy)
