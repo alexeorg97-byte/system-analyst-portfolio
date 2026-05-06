@@ -57,6 +57,9 @@ Production-прототип lead management системы с сайтом, фо
 **Фокус:** lead management, real-time chat, админка, API/WebSocket, роли, аудит  
 **Стек:** Next.js, TypeScript, PostgreSQL, Prisma, Socket.IO, Telegram Bot API, Яндекс Метрика, Nginx, PM2, VPS
 
+Рабочий прототип: https://chat-leads.ru  
+Публичный кейс: https://chat-leads.ru/case
+
 Что реализовано и спроектировано:
 
 - лендинг и форма заявки
