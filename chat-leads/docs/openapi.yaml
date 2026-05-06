@@ -1,0 +1,717 @@
+openapi: 3.0.3
+info:
+  title: Chat Leads API
+  version: 1.0.0
+  description: >
+    Основные REST API проекта Chat Leads. Спецификация описывает публичные,
+    административные и user management endpoints MVP.
+servers:
+  - url: https://chat-leads.ru
+    description: Production
+  - url: http://localhost:3000
+    description: Local
+tags:
+  - name: Public
+  - name: Admin Auth
+  - name: Admin Leads
+  - name: Admin Chats
+  - name: Admin Users
+paths:
+  /api/lead:
+    post:
+      tags: [Public]
+      summary: Создать лид из формы или чата
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadCreateRequest'
+      responses:
+        '200':
+          description: Лид принят в обработку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Ошибка внешней интеграции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/session:
+    post:
+      tags: [Public]
+      summary: Создать чат-сессию
+      responses:
+        '200':
+          description: Сессия создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  sessionId:
+                    type: string
+                    example: cmabc123xyz
+
+  /api/chat/session/{id}:
+    get:
+      tags: [Public]
+      summary: Получить чат-сессию и историю сообщений
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Сессия найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSessionResponse'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/session/{id}/messages:
+    post:
+      tags: [Public]
+      summary: Сохранить сообщение чат-сессии через HTTP
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sender, text]
+              properties:
+                sender:
+                  type: string
+                  enum: [bot, visitor, system]
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Сообщение сохранено
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    $ref: '#/components/schemas/Message'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Чат закрыт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/session/{id}/handoff:
+    post:
+      tags: [Public]
+      summary: Передать чат оператору
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Handoff выполнен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/login:
+    post:
+      tags: [Admin Auth]
+      summary: Авторизация в админке
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Неверные учётные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/logout:
+    post:
+      tags: [Admin Auth]
+      summary: Выход из админки
+      responses:
+        '200':
+          description: Успешный выход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /api/admin/leads/{id}/status:
+    patch:
+      tags: [Admin Leads]
+      summary: Изменить статус лида
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [new, sent, failed, in_progress, qualified, won, lost, spam]
+      responses:
+        '200':
+          description: Статус обновлён
+        '400':
+          description: Некорректный статус
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Лид не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/leads/{id}/comments:
+    post:
+      tags: [Admin Leads]
+      summary: Добавить комментарий к лиду
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Комментарий добавлен
+        '400':
+          description: Пустой комментарий
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Лид не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/chats/{id}/messages:
+    post:
+      tags: [Admin Chats]
+      summary: Отправить сообщение оператором
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Сообщение сохранено
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Чат не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Чат закрыт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/chats/{id}/assign:
+    post:
+      tags: [Admin Chats]
+      summary: Назначить чат оператору
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Чат назначен
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Чат не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/chats/{id}/close:
+    post:
+      tags: [Admin Chats]
+      summary: Закрыть чат оператором
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Чат закрыт
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Чат не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/users:
+    post:
+      tags: [Admin Users]
+      summary: Создать пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '200':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email уже занят
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/users/{id}:
+    patch:
+      tags: [Admin Users]
+      summary: Обновить пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Пользователь обновлён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Ошибка валидации или защита последнего администратора
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/users/{id}/password:
+    patch:
+      tags: [Admin Users]
+      summary: Сбросить пароль пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Пароль обновлён
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    LeadId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    SessionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    LeadCreateRequest:
+      type: object
+      required: [name, contact, need]
+      properties:
+        name:
+          type: string
+        contact:
+          type: string
+        need:
+          type: string
+        comment:
+          type: string
+          nullable: true
+        source:
+          type: string
+          enum: [form, chat]
+        chatSessionId:
+          type: string
+        utmSource:
+          type: string
+        utmMedium:
+          type: string
+        utmCampaign:
+          type: string
+        utmContent:
+          type: string
+        utmTerm:
+          type: string
+        referrer:
+          type: string
+        landingPage:
+          type: string
+    LeadResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+    ChatSessionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        session:
+          type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            assignedOperator:
+              type: string
+              nullable: true
+            assignedOperatorUser:
+              type: object
+              nullable: true
+              properties:
+                name:
+                  type: string
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        sessionId:
+          type: string
+          nullable: true
+        sender:
+          type: string
+          enum: [bot, visitor, operator, system]
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        operatorName:
+          type: string
+          nullable: true
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserCreateRequest:
+      type: object
+      required: [name, email, role, password, isActive]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, operator, viewer]
+        password:
+          type: string
+          minLength: 8
+        isActive:
+          type: boolean
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, operator, viewer]
+        isActive:
+          type: boolean
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, operator, viewer]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
