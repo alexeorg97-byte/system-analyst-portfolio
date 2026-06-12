@@ -376,5 +376,5 @@ flowchart TD
 - [Role Model](../02_roles-and-access/role-model.md)
 - [Access Matrix](../02_roles-and-access/access-matrix.md)
 - [Permissions](../02_roles-and-access/permissions.md)
-- RKL Webhook
-- Integrations Overview
+- [RKL Webhook](../05_api/rkl-webhook.md)
+- [Integrations Overview](../06_integrations/integrations-overview.md)
