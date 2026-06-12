@@ -390,4 +390,4 @@ flowchart TD
 - [Role Model](../02_roles-and-access/role-model.md)
 - [Access Matrix](../02_roles-and-access/access-matrix.md)
 - [Permissions](../02_roles-and-access/permissions.md)
-- Employer Cabinet Scenarios
+- [Employer Cabinet Scenarios](../07_ui-scenarios/employer-cabinet-scenarios.md)
