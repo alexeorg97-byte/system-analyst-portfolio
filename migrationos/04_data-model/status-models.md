@@ -178,6 +178,7 @@ stateDiagram-v2
     blocked --> active
     active --> archived
     blocked --> archived
+    archived --> [*]
 ```
 
 ---
@@ -240,8 +241,10 @@ stateDiagram-v2
     approved --> expires_soon
     approved --> expired
     expires_soon --> expired
+    expired --> archived
     approved --> archived
     rejected --> archived
+    archived --> [*]
 ```
 
 ---
@@ -304,6 +307,9 @@ stateDiagram-v2
     in_progress --> rejected
     need_info --> cancelled
     need_info --> rejected
+    completed --> [*]
+    rejected --> [*]
+    cancelled --> [*]
 ```
 
 ---
@@ -374,6 +380,9 @@ stateDiagram-v2
     in_progress --> completed
     in_progress --> rejected
     created --> cancelled
+    completed --> [*]
+    rejected --> [*]
+    cancelled --> [*]
 ```
 
 ---
@@ -426,6 +435,10 @@ stateDiagram-v2
     pending --> failed
     pending --> cancelled
     paid --> refunded
+    paid --> [*]
+    failed --> [*]
+    cancelled --> [*]
+    refunded --> [*]
 ```
 
 ---
@@ -457,6 +470,9 @@ stateDiagram-v2
     created --> paid
     created --> cancelled
     created --> expired
+    paid --> [*]
+    cancelled --> [*]
+    expired --> [*]
 ```
 
 ---
@@ -493,6 +509,7 @@ stateDiagram-v2
     sent --> failed
     failed --> sent
     delivered --> read
+    read --> [*]
 ```
 
 ---
@@ -523,6 +540,7 @@ stateDiagram-v2
     active --> closed
     closed --> active
     closed --> archived
+    archived --> [*]
 ```
 
 ---
@@ -573,6 +591,9 @@ stateDiagram-v2
     received --> failed
     failed --> processed
     unmatched --> processed
+    processed --> [*]
+    validation_error --> [*]
+    duplicate --> [*]
 ```
 
 ---
