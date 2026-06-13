@@ -416,13 +416,11 @@ CREATE TABLE rkl_checks (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT chk_rkl_checks_source
-        CHECK (source = 'SHERPA_RPA'),
-
-    CONSTRAINT chk_rkl_checks_checked_at
-        CHECK (checked_at <= now())
+        CHECK (source = 'SHERPA_RPA')
 );
 
 COMMENT ON TABLE rkl_checks IS 'Результаты РКЛ-проверок, полученные от SHERPA RPA.';
+COMMENT ON COLUMN rkl_checks.checked_at IS 'Дата проверки. Должна валидироваться на backend: не позже текущего времени.';
 
 
 CREATE INDEX idx_rkl_checks_migrant_id ON rkl_checks(migrant_id);
