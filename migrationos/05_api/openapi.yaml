@@ -1,1 +1,1740 @@
+openapi: 3.0.3
 
+info:
+  title: MigrationOS API
+  version: 1.0.0
+  description: |
+    OpenAPI-спецификация ключевых API платформы MigrationOS.
+
+    Спецификация демонстрирует проектирование REST API для портфолио
+    системного аналитика и связана с артефактами:
+    - API Overview
+    - ERD
+    - Data Dictionary
+    - Status Models
+    - Permissions
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Авторизация и текущая сессия
+  - name: Migrants
+    description: Карточки мигрантов
+  - name: Documents
+    description: Документы мигрантов
+  - name: Requests
+    description: Запросы между мигрантом, работодателем и агентством
+  - name: Marketplace
+    description: Каталог услуг и заявки
+  - name: Payments
+    description: Платежи и webhook оплаты
+  - name: RKL
+    description: РКЛ-проверки и webhook от SHERPA RPA
+  - name: Notifications
+    description: Уведомления пользователей
+  - name: Analytics
+    description: Дашборды и агрегированная аналитика
+
+paths:
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Получить текущего пользователя
+      description: Возвращает профиль пользователя текущей сессии.
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Текущий пользователь
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /migrants:
+    get:
+      tags:
+        - Migrants
+      summary: Получить список мигрантов
+      description: |
+        Возвращает список мигрантов с учетом роли, permissions и контекста доступа.
+        Для работодателя применяется scope org, для мигранта — own, для внутренних ролей — assigned или agency.
+      operationId: listMigrants
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/EmployerIdFilter"
+        - $ref: "#/components/parameters/ProjectIdFilter"
+        - $ref: "#/components/parameters/StatusFilter"
+        - $ref: "#/components/parameters/RiskLevelFilter"
+      responses:
+        "200":
+          description: Список мигрантов
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - pagination
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Migrant"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags:
+        - Migrants
+      summary: Создать карточку мигранта
+      description: Создает новую карточку мигранта для внутреннего пользователя с соответствующими правами.
+      operationId: createMigrant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMigrantRequest"
+      responses:
+        "201":
+          description: Карточка мигранта создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Migrant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /migrants/{migrantId}:
+    get:
+      tags:
+        - Migrants
+      summary: Получить карточку мигранта
+      description: Возвращает карточку мигранта по ID с учетом контекстного доступа.
+      operationId: getMigrantById
+      parameters:
+        - $ref: "#/components/parameters/MigrantId"
+      responses:
+        "200":
+          description: Карточка мигранта
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Migrant"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    patch:
+      tags:
+        - Migrants
+      summary: Обновить карточку мигранта
+      description: Частично обновляет карточку мигранта. Поля и допустимость изменений зависят от роли и permissions.
+      operationId: updateMigrant
+      parameters:
+        - $ref: "#/components/parameters/MigrantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMigrantRequest"
+      responses:
+        "200":
+          description: Карточка мигранта обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Migrant"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /migrants/{migrantId}/documents:
+    get:
+      tags:
+        - Migrants
+        - Documents
+      summary: Получить документы мигранта
+      description: Возвращает документы мигранта, доступные текущему пользователю.
+      operationId: listMigrantDocuments
+      parameters:
+        - $ref: "#/components/parameters/MigrantId"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/StatusFilter"
+      responses:
+        "200":
+          description: Список документов мигранта
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - pagination
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /migrants/{migrantId}/risk:
+    get:
+      tags:
+        - Migrants
+        - Analytics
+      summary: Получить риск-статус мигранта
+      description: Возвращает текущий риск-статус мигранта.
+      operationId: getMigrantRisk
+      parameters:
+        - $ref: "#/components/parameters/MigrantId"
+      responses:
+        "200":
+          description: Риск-статус мигранта
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskScore"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /documents:
+    post:
+      tags:
+        - Documents
+      summary: Создать документ мигранта
+      description: Создает запись документа мигранта. Файл может быть загружен отдельным вызовом.
+      operationId: createDocument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDocumentRequest"
+      responses:
+        "201":
+          description: Документ создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /documents/{documentId}/files:
+    post:
+      tags:
+        - Documents
+      summary: Загрузить файл документа
+      description: |
+        Загружает файл документа через JSON-запрос.
+        В демонстрационной спецификации используется поле contentBase64.
+      operationId: uploadDocumentFile
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fileName
+                - mimeType
+                - fileSize
+                - contentBase64
+              properties:
+                fileName:
+                  type: string
+                mimeType:
+                  type: string
+                fileSize:
+                  type: integer
+                  minimum: 1
+                contentBase64:
+                  type: string
+                  description: Файл в base64-представлении для демонстрационной схемы API.
+      responses:
+        "201":
+          description: Файл документа загружен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentFile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /documents/{documentId}/approve:
+    post:
+      tags:
+        - Documents
+      summary: Подтвердить документ
+      description: Переводит документ в статус approved, если статусный переход допустим.
+      operationId: approveDocument
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Документ подтвержден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /documents/{documentId}/reject:
+    post:
+      tags:
+        - Documents
+      summary: Отклонить документ
+      description: Переводит документ в статус rejected. Причина отклонения обязательна.
+      operationId: rejectDocument
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectDocumentRequest"
+      responses:
+        "200":
+          description: Документ отклонен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /requests:
+    get:
+      tags:
+        - Requests
+      summary: Получить список запросов
+      description: Возвращает список запросов с учетом роли и контекста доступа.
+      operationId: listRequests
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/EmployerIdFilter"
+        - $ref: "#/components/parameters/MigrantIdFilter"
+        - $ref: "#/components/parameters/StatusFilter"
+      responses:
+        "200":
+          description: Список запросов
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - pagination
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Request"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags:
+        - Requests
+      summary: Создать запрос
+      description: Создает запрос между мигрантом, работодателем и агентством.
+      operationId: createRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequestRequest"
+      responses:
+        "201":
+          description: Запрос создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Request"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /requests/{requestId}/status:
+    post:
+      tags:
+        - Requests
+      summary: Изменить статус запроса
+      description: Меняет статус запроса, если переход допустим по статусной модели и permissions.
+      operationId: changeRequestStatus
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRequestStatusRequest"
+      responses:
+        "200":
+          description: Статус запроса изменен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Request"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /services:
+    get:
+      tags:
+        - Marketplace
+      summary: Получить каталог услуг
+      description: Возвращает список услуг маркетплейса, доступных текущей роли.
+      operationId: listServices
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: Список услуг
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - pagination
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Service"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /service-orders:
+    post:
+      tags:
+        - Marketplace
+      summary: Создать заявку на услугу
+      description: Создает новую заявку на услугу в маркетплейсе.
+      operationId: createServiceOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServiceOrderRequest"
+      responses:
+        "201":
+          description: Заявка на услугу создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceOrder"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /payments:
+    post:
+      tags:
+        - Payments
+      summary: Создать платеж
+      description: Создает запись платежа по заявке на услугу.
+      operationId: createPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+      responses:
+        "201":
+          description: Платеж создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /payments/webhook:
+    post:
+      tags:
+        - Payments
+      summary: Принять payment webhook
+      description: |
+        Принимает webhook от платежного провайдера.
+        Для endpoint не используется BearerAuth; доверие обеспечивается подписью, API key или другой политикой интеграции.
+      operationId: receivePaymentWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentWebhookRequest"
+      responses:
+        "202":
+          description: Webhook принят в обработку
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /integrations/rkl/webhook:
+    post:
+      tags:
+        - RKL
+      summary: Принять webhook РКЛ от SHERPA RPA
+      description: |
+        Принимает результат РКЛ-проверки от внешней системы SHERPA RPA.
+        Для endpoint не используется BearerAuth; доверие обеспечивается интеграционной политикой.
+      operationId: receiveRklWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RklWebhookRequest"
+      responses:
+        "202":
+          description: Webhook принят в обработку
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAcceptedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Получить уведомления текущего пользователя
+      description: Возвращает уведомления текущего пользователя с учетом статуса доставки или прочтения.
+      operationId: listNotifications
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - $ref: "#/components/parameters/StatusFilter"
+      responses:
+        "200":
+          description: Список уведомлений
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - pagination
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Notification"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Получить данные дашборда
+      description: |
+        Возвращает агрегированную сводку для dashboard.
+        Набор значений зависит от роли и контекста доступа пользователя.
+      operationId: getDashboard
+      parameters:
+        - $ref: "#/components/parameters/EmployerIdFilter"
+        - $ref: "#/components/parameters/ProjectIdFilter"
+        - $ref: "#/components/parameters/MigrantIdFilter"
+        - $ref: "#/components/parameters/RiskLevelFilter"
+      responses:
+        "200":
+          description: Данные дашборда
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      description: Максимальное количество элементов в ответе.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Offset:
+      name: offset
+      in: query
+      description: Смещение для limit-offset пагинации.
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    MigrantId:
+      name: migrantId
+      in: path
+      description: Идентификатор мигранта.
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DocumentId:
+      name: documentId
+      in: path
+      description: Идентификатор документа.
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RequestId:
+      name: requestId
+      in: path
+      description: Идентификатор запроса.
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EmployerIdFilter:
+      name: employerId
+      in: query
+      description: Фильтр по работодателю.
+      required: false
+      schema:
+        type: string
+        format: uuid
+    ProjectIdFilter:
+      name: projectId
+      in: query
+      description: Фильтр по проекту.
+      required: false
+      schema:
+        type: string
+        format: uuid
+    MigrantIdFilter:
+      name: migrantId
+      in: query
+      description: Фильтр по мигранту.
+      required: false
+      schema:
+        type: string
+        format: uuid
+    StatusFilter:
+      name: status
+      in: query
+      description: Универсальный статусный фильтр. Допустимые значения зависят от endpoint.
+      required: false
+      schema:
+        type: string
+    RiskLevelFilter:
+      name: riskLevel
+      in: query
+      description: Фильтр по уровню риска.
+      required: false
+      schema:
+        $ref: "#/components/schemas/RiskLevel"
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Internal Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+            traceId:
+              type: string
+
+    Pagination:
+      type: object
+      required:
+        - limit
+        - offset
+        - total
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+
+    UserRole:
+      type: string
+      enum:
+        - migrant
+        - employer
+        - manager
+        - supervisor
+        - superadmin
+
+    UserStatus:
+      type: string
+      enum:
+        - active
+        - blocked
+        - pending
+        - archived
+
+    User:
+      type: object
+      required:
+        - id
+        - role
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          $ref: "#/components/schemas/UserRole"
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/UserStatus"
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    EmployerVerificationStatus:
+      type: string
+      enum:
+        - pending_verification
+        - verified
+        - rejected
+        - blocked
+
+    Employer:
+      type: object
+      required:
+        - id
+        - name
+        - inn
+        - verificationStatus
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        inn:
+          type: string
+        verificationStatus:
+          $ref: "#/components/schemas/EmployerVerificationStatus"
+        contactEmail:
+          type: string
+          format: email
+          nullable: true
+        contactPhone:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    MigrantStatus:
+      type: string
+      enum:
+        - active
+        - pending
+        - blocked
+        - archived
+
+    Migrant:
+      type: object
+      required:
+        - id
+        - fullName
+        - birthDate
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+          nullable: true
+        employerId:
+          type: string
+          format: uuid
+          nullable: true
+        projectId:
+          type: string
+          format: uuid
+          nullable: true
+        managerId:
+          type: string
+          format: uuid
+          nullable: true
+        fullName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+          nullable: true
+        passportNumber:
+          type: string
+          nullable: true
+        citizenship:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/MigrantStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateMigrantRequest:
+      type: object
+      required:
+        - fullName
+        - birthDate
+      properties:
+        userId:
+          type: string
+          format: uuid
+        employerId:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        managerId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        passportNumber:
+          type: string
+        citizenship:
+          type: string
+        status:
+          $ref: "#/components/schemas/MigrantStatus"
+
+    UpdateMigrantRequest:
+      type: object
+      properties:
+        employerId:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        managerId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        phone:
+          type: string
+        passportNumber:
+          type: string
+        citizenship:
+          type: string
+        status:
+          $ref: "#/components/schemas/MigrantStatus"
+
+    DocumentStatus:
+      type: string
+      enum:
+        - draft
+        - under_review
+        - approved
+        - rejected
+        - expires_soon
+        - expired
+        - archived
+
+    Document:
+      type: object
+      required:
+        - id
+        - migrantId
+        - documentType
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        migrantId:
+          type: string
+          format: uuid
+        documentType:
+          type: string
+        number:
+          type: string
+          nullable: true
+        issueDate:
+          type: string
+          format: date
+          nullable: true
+        expirationDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: "#/components/schemas/DocumentStatus"
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateDocumentRequest:
+      type: object
+      required:
+        - migrantId
+        - documentType
+      properties:
+        migrantId:
+          type: string
+          format: uuid
+        documentType:
+          type: string
+        number:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        expirationDate:
+          type: string
+          format: date
+
+    RejectDocumentRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+
+    DocumentFile:
+      type: object
+      required:
+        - id
+        - documentId
+        - storageKey
+        - fileName
+        - mimeType
+        - fileSize
+        - uploadedBy
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        documentId:
+          type: string
+          format: uuid
+        storageKey:
+          type: string
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+        uploadedBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    RequestStatus:
+      type: string
+      enum:
+        - created
+        - in_progress
+        - need_info
+        - completed
+        - rejected
+        - cancelled
+
+    Request:
+      type: object
+      required:
+        - id
+        - requestType
+        - createdBy
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        requestType:
+          type: string
+        migrantId:
+          type: string
+          format: uuid
+          nullable: true
+        employerId:
+          type: string
+          format: uuid
+          nullable: true
+        createdBy:
+          type: string
+          format: uuid
+        assigneeId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        comment:
+          type: string
+          nullable: true
+        internalComment:
+          type: string
+          nullable: true
+          description: Возвращается только внутренним ролям.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateRequestRequest:
+      type: object
+      required:
+        - requestType
+      properties:
+        requestType:
+          type: string
+        migrantId:
+          type: string
+          format: uuid
+        employerId:
+          type: string
+          format: uuid
+        comment:
+          type: string
+
+    ChangeRequestStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        comment:
+          type: string
+        internalComment:
+          type: string
+        reason:
+          type: string
+
+    Service:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - isPaid
+        - isActive
+        - availableForRole
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: double
+          nullable: true
+        isPaid:
+          type: boolean
+        isActive:
+          type: boolean
+        availableForRole:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserRole"
+        createdAt:
+          type: string
+          format: date-time
+
+    ServiceOrderStatus:
+      type: string
+      enum:
+        - draft
+        - created
+        - waiting_payment
+        - paid
+        - in_progress
+        - need_info
+        - completed
+        - rejected
+        - cancelled
+
+    ServiceOrder:
+      type: object
+      required:
+        - id
+        - serviceId
+        - createdBy
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        serviceId:
+          type: string
+          format: uuid
+        migrantId:
+          type: string
+          format: uuid
+          nullable: true
+        employerId:
+          type: string
+          format: uuid
+          nullable: true
+        createdBy:
+          type: string
+          format: uuid
+        assigneeId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ServiceOrderStatus"
+        totalAmount:
+          type: number
+          format: double
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateServiceOrderRequest:
+      type: object
+      required:
+        - serviceId
+      properties:
+        serviceId:
+          type: string
+          format: uuid
+        migrantId:
+          type: string
+          format: uuid
+        employerId:
+          type: string
+          format: uuid
+        totalAmount:
+          type: number
+          format: double
+
+    PaymentStatus:
+      type: string
+      enum:
+        - pending
+        - paid
+        - failed
+        - cancelled
+        - refunded
+
+    Payment:
+      type: object
+      required:
+        - id
+        - serviceOrderId
+        - provider
+        - amount
+        - currency
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        serviceOrderId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        providerPaymentId:
+          type: string
+          nullable: true
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        createdAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreatePaymentRequest:
+      type: object
+      required:
+        - serviceOrderId
+        - provider
+        - amount
+        - currency
+      properties:
+        serviceOrderId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+
+    PaymentWebhookRequest:
+      type: object
+      required:
+        - eventId
+        - providerPaymentId
+        - status
+        - amount
+        - currency
+        - processedAt
+      properties:
+        eventId:
+          type: string
+        providerPaymentId:
+          type: string
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+        processedAt:
+          type: string
+          format: date-time
+
+    RklCheck:
+      type: object
+      required:
+        - id
+        - migrantId
+        - eventId
+        - externalCheckId
+        - source
+        - checkedAt
+        - matched
+        - rawStatus
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        migrantId:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+        externalCheckId:
+          type: string
+        source:
+          type: string
+          enum:
+            - SHERPA_RPA
+        checkedAt:
+          type: string
+          format: date-time
+        matched:
+          type: boolean
+        rawStatus:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    RklWebhookRequest:
+      type: object
+      required:
+        - eventId
+        - externalCheckId
+        - checkedAt
+        - source
+        - migrant
+        - result
+      properties:
+        eventId:
+          type: string
+        externalCheckId:
+          type: string
+        checkedAt:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum:
+            - SHERPA_RPA
+        migrant:
+          type: object
+          properties:
+            fullName:
+              type: string
+            birthDate:
+              type: string
+              format: date
+            passportNumber:
+              type: string
+            phone:
+              type: string
+        result:
+          type: object
+          required:
+            - status
+            - matched
+            - rawStatus
+          properties:
+            status:
+              type: string
+            matched:
+              type: boolean
+            rawStatus:
+              type: string
+            matchConfidence:
+              type: string
+            comment:
+              type: string
+
+    RiskLevel:
+      type: string
+      enum:
+        - normal
+        - attention
+        - critical
+
+    RiskScore:
+      type: object
+      required:
+        - migrantId
+        - score
+        - level
+        - calculatedAt
+      properties:
+        migrantId:
+          type: string
+          format: uuid
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        level:
+          $ref: "#/components/schemas/RiskLevel"
+        reason:
+          type: object
+          additionalProperties: true
+          nullable: true
+        calculatedAt:
+          type: string
+          format: date-time
+
+    NotificationStatus:
+      type: string
+      enum:
+        - created
+        - sent
+        - delivered
+        - read
+        - failed
+
+    Notification:
+      type: object
+      required:
+        - id
+        - userId
+        - type
+        - title
+        - body
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          $ref: "#/components/schemas/NotificationStatus"
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    DashboardResponse:
+      type: object
+      required:
+        - generatedAt
+        - summary
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          required:
+            - totalMigrants
+            - criticalRisks
+            - documentsUnderReview
+            - requestsInProgress
+            - serviceOrdersWaitingPayment
+          properties:
+            totalMigrants:
+              type: integer
+            criticalRisks:
+              type: integer
+            documentsUnderReview:
+              type: integer
+            requestsInProgress:
+              type: integer
+            serviceOrdersWaitingPayment:
+              type: integer
+        topEmployersByRisk:
+          type: array
+          items:
+            type: object
+            properties:
+              employerId:
+                type: string
+                format: uuid
+              employerName:
+                type: string
+              criticalCount:
+                type: integer
+
+    WebhookAcceptedResponse:
+      type: object
+      required:
+        - accepted
+        - status
+      properties:
+        accepted:
+          type: boolean
+        status:
+          type: string
+          enum:
+            - accepted
+            - duplicate
+            - queued
+        eventId:
+          type: string
+          nullable: true
