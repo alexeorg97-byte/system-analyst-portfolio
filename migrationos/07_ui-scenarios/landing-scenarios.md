@@ -589,9 +589,9 @@ flowchart TD
 
 ## 23. Связанные артефакты
 
-- [Project Scope](../00_case-overview/project-scope.md)
-- [Product Vision](../00_case-overview/product-vision.md)
-- [Stakeholders](../00_case-overview/stakeholders.md)
+- [Project Scope](../00_project-overview/project-scope.md)
+- [Product Vision](../00_project-overview/product-vision.md)
+- [Stakeholders](../00_project-overview/stakeholders.md)
 - [Functional Requirements](../01_requirements/functional-requirements.md)
 - [User Stories](../01_requirements/user-stories.md)
 - [Acceptance Criteria](../01_requirements/acceptance-criteria.md)
